@@ -1,5 +1,4 @@
 // Revalidates and commits exec authority against the current policy.
-import { DEFAULT_AGENT_ID } from "../routing/session-key.js";
 import type { ExecApprovalPolicySnapshot } from "./exec-approval-policy-snapshot.js";
 import {
   applyAllowAlwaysDecision,
@@ -203,7 +202,10 @@ function applyRecordedAllowlistMetadata(params: {
   if (keys.size === 0) {
     return null;
   }
-  const target = params.agentId ?? DEFAULT_AGENT_ID;
+  if (!params.agentId) {
+    throw new Error("Exec allowlist metadata update requires an explicit agent id.");
+  }
+  const target = params.agentId;
   const agents = params.file.agents ?? {};
   let changed = false;
   const nextAgents = { ...agents };
