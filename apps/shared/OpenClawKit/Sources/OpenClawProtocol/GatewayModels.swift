@@ -4905,6 +4905,7 @@ public struct SessionRow: Codable, Sendable {
     public let updatedat: AnyCodable?
     public let archived: Bool?
     public let archivedat: Double?
+    public let archivedby: SessionCreatedActor?
     public let pinned: Bool?
     public let pinnedat: Double?
     public let icon: String?
@@ -4957,6 +4958,7 @@ public struct SessionRow: Codable, Sendable {
         updatedat: AnyCodable? = nil,
         archived: Bool? = nil,
         archivedat: Double? = nil,
+        archivedby: SessionCreatedActor? = nil,
         pinned: Bool? = nil,
         pinnedat: Double? = nil,
         icon: String? = nil,
@@ -5008,6 +5010,7 @@ public struct SessionRow: Codable, Sendable {
         self.updatedat = updatedat
         self.archived = archived
         self.archivedat = archivedat
+        self.archivedby = archivedby
         self.pinned = pinned
         self.pinnedat = pinnedat
         self.icon = icon
@@ -5061,6 +5064,7 @@ public struct SessionRow: Codable, Sendable {
         case updatedat = "updatedAt"
         case archived
         case archivedat = "archivedAt"
+        case archivedby = "archivedBy"
         case pinned
         case pinnedat = "pinnedAt"
         case icon

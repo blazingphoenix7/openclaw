@@ -93,6 +93,7 @@ export type GatewaySessionRow = {
   updatedAt: number | null;
   archived?: boolean;
   archivedAt?: number;
+  archivedBy?: SessionEntry["archivedBy"];
   pinned?: boolean;
   pinnedAt?: number;
   icon?: string;
