@@ -598,6 +598,8 @@ export const pt_BR: TranslationMap = {
     worktreeName: "Nome do worktree",
     worktreeNamePlaceholder: "auto",
     worktreeNameInvalid: "Nomes de worktree usam letras minúsculas, dígitos e hifens.",
+    incognito: "Anônimo",
+    incognitoDescription: "Manter esta conversa apenas até o Gateway reiniciar",
     messagePlaceholder: "Em que esta sessão deve trabalhar?",
     readingAttachment: "Lendo anexo",
     start: "Iniciar sessão",
@@ -678,6 +680,8 @@ export const pt_BR: TranslationMap = {
     openWorkboardCard: "Abrir cartão do Workboard",
     dashboardAvailable: "Painel disponível",
     approvalNeeded: "Aprovação necessária",
+    queuedMessage: "{count} mensagem na fila para enviar",
+    queuedMessages: "{count} mensagens na fila para enviar",
     noSessions: "Nenhuma sessão encontrada.",
     noActiveSessions: "Nenhum thread ativo.",
     noArchivedSessions: "Nenhuma sessão arquivada.",
@@ -745,6 +749,7 @@ export const pt_BR: TranslationMap = {
     unread: "Unread",
     worktreeSession: "Worktree session",
     automationAttached: "Automation attached",
+    incognito: "Conversa anônima",
     cloudWorkerPlacement: "Worker na nuvem: {state}",
     cloudWorkerPlacementConflict: "Worker na nuvem: {state} · 1 conflito de workspace",
     cloudWorkerPlacementConflicts: "Worker na nuvem: {state} · {count} conflitos de workspace",
@@ -2421,6 +2426,8 @@ export const pt_BR: TranslationMap = {
     toolRuns: "{count} execuções",
     identity: {
       title: "Identidade",
+      menuLabel: "Menu de identidade",
+      menuButtonLabel: "Menu de identidade e app para {name}",
       description: "Seu perfil neste gateway.",
       loading: "Carregando sua identidade…",
       profileUnavailable: "Não foi possível carregar seu perfil de identidade.",
@@ -3045,6 +3052,7 @@ export const pt_BR: TranslationMap = {
     eventStale: "Sessão obsoleta",
   },
   connection: {
+    queuedCount: "{count} na fila",
     reconnecting: "Reconectando…",
     retryNow: "Tentar novamente agora",
     access: {
@@ -3718,6 +3726,16 @@ export const pt_BR: TranslationMap = {
   },
   login: {
     subtitle: "Painel do Gateway",
+    deviceAuthMigration: {
+      banner: "Este navegador ainda precisa de aprovação única do dispositivo após a atualização.",
+      action: "Proteger este navegador",
+      secureContextRequired:
+        "Este navegador legado permanece disponível temporariamente. Reabra-o por HTTPS ou localhost para protegê-lo com a identidade do dispositivo.",
+      pendingUnavailable:
+        "A solicitação de pareamento do navegador ainda não está disponível. Tente novamente em instantes.",
+      loadFailed: "Não foi possível carregar a solicitação de pareamento deste navegador: {error}",
+      approvalFailed: "Não foi possível proteger este navegador: {error}",
+    },
     passwordPlaceholder: "opcional",
     showToken: "Mostrar token",
     hideToken: "Ocultar token",
@@ -3826,6 +3844,19 @@ export const pt_BR: TranslationMap = {
     },
     outputTokens: "{count} tokens de saída",
     archivedSessionDisabled: "Restaure esta sessão para enviar mensagens.",
+    sessionSharing: {
+      menu: "Compartilhamento de conversa",
+      current: "Visibilidade da conversa: {visibility}",
+      visibility: "Visibilidade",
+      shared: "Compartilhada",
+      readOnly: "Somente leitura",
+      suggest: "Sugerir",
+      draft: "Rascunho",
+      members: "Membros",
+      selected: "Membro",
+      noPeople: "Nenhuma pessoa pareada encontrada.",
+      readOnlyNotice: "Somente o proprietário da thread e os membros podem atuar nesta thread.",
+    },
     loadOlder: "Carregar anteriores",
     sessionHeader: {
       renameTooltip: "Renomear sessão",
@@ -3839,6 +3870,7 @@ export const pt_BR: TranslationMap = {
       copyPath: "Copiar caminho",
       copyBranch: "Copiar nome do branch",
       copied: "Copiado",
+      incognito: "Thread anônima",
       branches: "Ramificações do thread",
       branchSwitchUnavailable:
         "A troca de ramificação não está disponível enquanto o agente está trabalhando.",
@@ -4130,6 +4162,7 @@ export const pt_BR: TranslationMap = {
       openInCanvas: "Abrir no canvas",
       reply: "Responder",
       replyToMessage: "Responder à mensagem",
+      replyingTo: "Respondendo a {name}",
       rewind: "Retroceder",
       rewindConfirm: "Retroceder para antes desta mensagem?",
       rewindToHere: "Retroceder até aqui",
@@ -4228,6 +4261,8 @@ export const pt_BR: TranslationMap = {
       placeholderDisconnected: "Connect to the gateway to start chatting...",
       offlineHint:
         "Offline — as mensagens serão enfileiradas e enviadas quando a conexão retornar.",
+      offlineQueuedHint:
+        "Offline — {count} na fila; as mensagens serão enviadas quando a conexão retornar.",
       preparingModel: "Preparando modelo...",
       responding: "{name} está respondendo...",
       sendingMessage: "Enviando mensagem...",

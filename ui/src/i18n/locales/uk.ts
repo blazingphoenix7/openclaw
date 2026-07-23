@@ -598,6 +598,8 @@ export const uk: TranslationMap = {
     worktreeName: "Назва worktree",
     worktreeNamePlaceholder: "auto",
     worktreeNameInvalid: "Назви worktree мають містити малі літери, цифри та дефіси.",
+    incognito: "Інкогніто",
+    incognitoDescription: "Зберігати цей потік лише до перезапуску Gateway",
     messagePlaceholder: "Над чим має працювати цей сеанс?",
     readingAttachment: "Читання вкладення",
     start: "Почати сеанс",
@@ -678,6 +680,8 @@ export const uk: TranslationMap = {
     openWorkboardCard: "Відкрити картку Workboard",
     dashboardAvailable: "Панель доступна",
     approvalNeeded: "Потрібне схвалення",
+    queuedMessage: "{count} повідомлення в черзі на надсилання",
+    queuedMessages: "{count} повідомлень у черзі на надсилання",
     noSessions: "Сеансів не знайдено.",
     noActiveSessions: "Немає активних тем.",
     noArchivedSessions: "Немає заархівованих сесій.",
@@ -745,6 +749,7 @@ export const uk: TranslationMap = {
     unread: "Unread",
     worktreeSession: "Worktree session",
     automationAttached: "Automation attached",
+    incognito: "Потік інкогніто",
     cloudWorkerPlacement: "Хмарний виконавець: {state}",
     cloudWorkerPlacementConflict: "Хмарний воркер: {state} · 1 конфлікт робочого простору",
     cloudWorkerPlacementConflicts: "Хмарний воркер: {state} · {count} конфліктів робочого простору",
@@ -2423,6 +2428,8 @@ export const uk: TranslationMap = {
     toolRuns: "{count} запусків",
     identity: {
       title: "Ідентичність",
+      menuLabel: "Меню ідентичності",
+      menuButtonLabel: "Меню ідентичності та застосунку для {name}",
       description: "Ваш профіль на цьому gateway.",
       loading: "Завантаження вашої ідентичності…",
       profileUnavailable: "Не вдалося завантажити профіль вашої ідентичності.",
@@ -3043,6 +3050,7 @@ export const uk: TranslationMap = {
     eventStale: "Застарілий сеанс",
   },
   connection: {
+    queuedCount: "{count} у черзі",
     reconnecting: "Повторне підключення…",
     retryNow: "Повторити зараз",
     access: {
@@ -3710,6 +3718,15 @@ export const uk: TranslationMap = {
   },
   login: {
     subtitle: "Панель Gateway",
+    deviceAuthMigration: {
+      banner: "Цей браузер після оновлення все ще потребує одноразового схвалення пристрою.",
+      action: "Захистити цей браузер",
+      secureContextRequired:
+        "Цей застарілий браузер тимчасово залишається доступним. Відкрийте його через HTTPS або localhost, щоб захистити його ідентичністю пристрою.",
+      pendingUnavailable: "Запит на сполучення браузера ще недоступний. Спробуйте за мить.",
+      loadFailed: "Не вдалося завантажити запит на сполучення цього браузера: {error}",
+      approvalFailed: "Не вдалося захистити цей браузер: {error}",
+    },
     passwordPlaceholder: "необов’язково",
     showToken: "Показати токен",
     hideToken: "Приховати токен",
@@ -3819,6 +3836,19 @@ export const uk: TranslationMap = {
     },
     outputTokens: "{count} вихідних токенів",
     archivedSessionDisabled: "Відновіть цей сеанс, щоб надсилати повідомлення.",
+    sessionSharing: {
+      menu: "Спільний доступ до потоку",
+      current: "Видимість потоку: {visibility}",
+      visibility: "Видимість",
+      shared: "Спільний",
+      readOnly: "Лише для читання",
+      suggest: "Пропонувати",
+      draft: "Чернетка",
+      members: "Учасники",
+      selected: "Учасник",
+      noPeople: "Пов'язаних людей не знайдено.",
+      readOnlyNotice: "Лише власник та учасники гілки можуть діяти в цій гілці.",
+    },
     loadOlder: "Завантажити старіші",
     sessionHeader: {
       renameTooltip: "Перейменувати сеанс",
@@ -3832,6 +3862,7 @@ export const uk: TranslationMap = {
       copyPath: "Копіювати шлях",
       copyBranch: "Копіювати назву гілки",
       copied: "Скопійовано",
+      incognito: "Анонімна гілка",
       branches: "Гілки треду",
       branchSwitchUnavailable: "Перемикання гілок недоступне, поки агент працює.",
       branchSwitchRequiresAdmin: "Перемикання гілок потребує адміністративного доступу оператора.",
@@ -4121,6 +4152,7 @@ export const uk: TranslationMap = {
       openInCanvas: "Відкрити в полотні",
       reply: "Відповісти",
       replyToMessage: "Відповісти на повідомлення",
+      replyingTo: "Відповідь для {name}",
       rewind: "Перемотати назад",
       rewindConfirm: "Перемотати до моменту перед цим повідомленням?",
       rewindToHere: "Перемотати сюди",
@@ -4220,6 +4252,8 @@ export const uk: TranslationMap = {
       placeholderDisconnected: "Connect to the gateway to start chatting...",
       offlineHint:
         "Офлайн — повідомлення буде поставлено в чергу й надіслано після відновлення з'єднання.",
+      offlineQueuedHint:
+        "Офлайн — {count} у черзі; повідомлення надішлються, коли з'явиться з'єднання.",
       preparingModel: "Підготовка моделі...",
       responding: "{name} відповідає...",
       sendingMessage: "Надсилання повідомлення...",
