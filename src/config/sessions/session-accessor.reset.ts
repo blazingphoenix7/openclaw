@@ -10,6 +10,7 @@ import {
   listSessionEntriesReadOnly,
   resolveSessionEntryFromStore,
 } from "./session-accessor.entry.js";
+import type { SessionEntryLifecycleUpsert } from "./session-accessor.lifecycle-types.js";
 import { applySessionEntryLifecycleMutation } from "./session-accessor.lifecycle.js";
 import type {
   SessionLifecycleTranscriptInfo,
@@ -21,7 +22,6 @@ import type {
   ResolvedSessionMaintenanceConfig,
   SessionMaintenanceWarning,
 } from "./store-maintenance.js";
-import type { SessionEntryLifecycleUpsert } from "./store.js";
 import type { SessionEntry } from "./types.js";
 
 type SessionEntryRetirement = {
