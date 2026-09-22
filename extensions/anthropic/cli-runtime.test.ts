@@ -11,10 +11,14 @@ import type {
 } from "openclaw/plugin-sdk/cli-backend";
 import { formatErrorMessageForDisplay } from "openclaw/plugin-sdk/error-runtime";
 import { createDeferred } from "openclaw/plugin-sdk/extension-shared";
+import { withMockedWindowsPlatform } from "openclaw/plugin-sdk/test-node-mocks";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { buildAnthropicCliBackend } from "./cli-backend.js";
 import type { ClaudeCliSecretInput } from "./cli-process.js";
+import * as runtimeArgs from "./cli-runtime-args.js";
+import { prepareClaudeCliTransportArgs } from "./cli-runtime-args.js";
 import { CLAUDE_PROTOCOL_FIXTURE } from "./cli-runtime.test-support.js";
+import { resolveClaudeCliExecutionArgs } from "./cli-shared.js";
 import { executeClaudeCli } from "./cli.runtime.js";
 
 const roots: string[] = [];
@@ -100,6 +104,31 @@ function createLiveSession(cleanup?: () => Promise<void>): CliBackendLiveSession
       }
     },
   };
+}
+
+// Multi-server MCP installs admit hundreds of bridged tools; 600 of these need about 30,000 chars.
+const manyOpenClawTools = Array.from(
+  { length: 600 },
+  (_, index) => `server_${index % 8}__synthetic_tool_action_${index}`,
+);
+
+async function createRestrictedContext(openClaw: string[]) {
+  const context = await createContext("normal", {
+    liveSession: createLiveSession(),
+    toolAvailability: { native: ["Read"], openClaw },
+  });
+  context.args = [
+    ...context.args,
+    ...resolveClaudeCliExecutionArgs({
+      workspaceDir: context.cwd,
+      provider: "claude-cli",
+      modelId: context.modelId,
+      useResume: false,
+      baseArgs: buildAnthropicCliBackend().config.args ?? [],
+      toolAvailability: context.toolAvailability,
+    }),
+  ];
+  return context;
 }
 
 async function collect(context: CliBackendExecuteContext) {
@@ -684,6 +713,94 @@ describe("Claude native stdio boundary", () => {
     expect(flagValues("--tools")).toEqual(["Read"]);
     expect(flagValues("--allowedTools")).toEqual(["mcp__openclaw__message"]);
     expect(context.requestToolPermission).toHaveBeenCalledTimes(2);
+  });
+
+  it("moves a Windows allowlist too long for the command line into settings the child keeps", async () => {
+    const context = await createRestrictedContext(manyOpenClawTools);
+    const restrictedSettings = context.args[context.args.indexOf("--settings") + 1]!;
+    const prepareArgs = runtimeArgs.prepareClaudeCliTransportArgs;
+    vi.spyOn(runtimeArgs, "prepareClaudeCliTransportArgs").mockImplementation((current) =>
+      withMockedWindowsPlatform(() => prepareArgs(current)),
+    );
+    // Prepare Windows arguments, then run the process on the host platform.
+    const detail = resultDetail(await collect(context));
+    const args = detail.argv as string[];
+    const settingsPath = args[args.indexOf("--settings") + 1]!;
+
+    expect(args).not.toContain("--allowedTools");
+    expect(args.filter((arg) => arg === "--settings")).toHaveLength(1);
+    expect(args.join(" ").length).toBeLessThan(2_000);
+    expect(JSON.parse(await readFile(settingsPath, "utf8"))).toEqual({
+      ...JSON.parse(restrictedSettings),
+      permissions: { allow: manyOpenClawTools.map((name) => `mcp__openclaw__${name}`) },
+    });
+    const handle = context.liveSession?.current();
+    handle?.close("restart");
+    await handle?.waitForExit();
+    await expect(access(settingsPath)).rejects.toThrow();
+  });
+
+  it("keeps short Windows allowlists and all other platforms on the inline argument", async () => {
+    const short = await createRestrictedContext(["message", "sessions_spawn"]);
+    const long = await createRestrictedContext(manyOpenClawTools);
+    const platform = vi.spyOn(process, "platform", "get").mockReturnValue("linux");
+    const inline = [prepareClaudeCliTransportArgs(short), prepareClaudeCliTransportArgs(long)];
+    const longArgs = inline[1]!.args;
+
+    expect(inline.map(({ settings }) => settings)).toEqual([undefined, undefined]);
+    expect(longArgs[longArgs.indexOf("--allowedTools") + 1]).toBe(
+      manyOpenClawTools.map((name) => `mcp__openclaw__${name}`).join(","),
+    );
+    platform.mockReturnValue("darwin");
+    expect([prepareClaudeCliTransportArgs(short), prepareClaudeCliTransportArgs(long)]).toEqual(
+      inline,
+    );
+    platform.mockReturnValue("win32");
+    expect(prepareClaudeCliTransportArgs(short)).toEqual(inline[0]);
+  });
+
+  it("merges a relocated Windows allowlist into the last inline settings only", async () => {
+    vi.spyOn(process, "platform", "get").mockReturnValue("win32");
+    const approved = manyOpenClawTools.map((name) => `mcp__openclaw__${name}`);
+    const existing = JSON.stringify({
+      model: "synthetic-model",
+      permissions: { allow: ["Read"], deny: ["Bash"], defaultMode: "default" },
+    });
+    for (const settingsArgs of [["--settings", existing], [`--settings=${existing}`]]) {
+      const context = await createContext();
+      context.args = [...context.args, ...settingsArgs, "--allowedTools", approved.join(",")];
+      const { args, settings } = prepareClaudeCliTransportArgs(context);
+
+      expect(args.some((arg) => arg.startsWith("--settings"))).toBe(false);
+      expect(args).not.toContain("--allowedTools");
+      expect(settings).toEqual({
+        model: "synthetic-model",
+        permissions: { allow: ["Read", ...approved], deny: ["Bash"], defaultMode: "default" },
+      });
+    }
+    const twoSettings = await createContext();
+    twoSettings.args = [
+      ...twoSettings.args,
+      "--settings",
+      '{"model":"first"}',
+      "--settings",
+      existing,
+      "--allowedTools",
+      approved.join(","),
+    ];
+    const last = prepareClaudeCliTransportArgs(twoSettings);
+
+    expect(last.args).toEqual(expect.arrayContaining(["--settings", '{"model":"first"}']));
+    expect(last.settings?.model).toBe("synthetic-model");
+    for (const value of ["/tmp/operator-settings.json", '{"permissions":']) {
+      const context = await createContext();
+      context.args = [...context.args, "--settings", value, "--allowedTools", approved.join(",")];
+      const { args, settings } = prepareClaudeCliTransportArgs(context);
+
+      expect(settings).toBeUndefined();
+      expect(args).toEqual(expect.arrayContaining(["--settings", value]));
+      expect(args[args.indexOf("--allowedTools") + 1]).toBe(approved.join(","));
+    }
   });
 
   it("cancels a pending native permission without blocking the protocol reader", async () => {
