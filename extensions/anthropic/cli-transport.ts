@@ -18,10 +18,15 @@ export async function writeClaudeCliSettingsFile(settings: Record<string, unknow
     rootDir: resolvePreferredOpenClawTmpDir(),
     prefix: "openclaw-claude-cli-settings-",
   });
-  return {
-    path: await workspace.writeJson("settings.json", settings),
-    cleanup: () => workspace.cleanup(),
-  };
+  try {
+    return {
+      path: await workspace.writeJson("settings.json", settings),
+      cleanup: () => workspace.cleanup(),
+    };
+  } catch (error) {
+    await workspace.cleanup();
+    throw error;
+  }
 }
 
 /** One Claude Code subprocess and its bidirectional stream-json control channel. */
@@ -36,8 +41,14 @@ export function createClaudeCliTransport(params: {
   onRequest: (request: Record<string, unknown>, signal: AbortSignal) => Promise<() => unknown>;
   onError: (error: unknown) => void;
 }) {
-  const owner = createClaudeCliProcessOwner(params.currentContext, params.secretInput);
   const removeSettings = () => void params.settingsFile?.cleanup().catch(() => {});
+  let owner: ReturnType<typeof createClaudeCliProcessOwner>;
+  try {
+    owner = createClaudeCliProcessOwner(params.currentContext, params.secretInput);
+  } catch (error) {
+    removeSettings();
+    throw error;
+  }
   let child: ReturnType<typeof owner.spawn>;
   try {
     const env = { ...params.context.env };

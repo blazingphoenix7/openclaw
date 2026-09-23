@@ -11,6 +11,7 @@ import type {
 } from "openclaw/plugin-sdk/cli-backend";
 import { formatErrorMessageForDisplay } from "openclaw/plugin-sdk/error-runtime";
 import { createDeferred } from "openclaw/plugin-sdk/extension-shared";
+import * as tempPath from "openclaw/plugin-sdk/temp-path";
 import { withMockedWindowsPlatform } from "openclaw/plugin-sdk/test-node-mocks";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { buildAnthropicCliBackend } from "./cli-backend.js";
@@ -129,6 +130,23 @@ async function createRestrictedContext(openClaw: string[]) {
     }),
   ];
   return context;
+}
+
+function interceptWindowsSettingsWrite(
+  writeJson: (write: () => Promise<string>) => Promise<string>,
+) {
+  const prepareArgs = runtimeArgs.prepareClaudeCliTransportArgs;
+  vi.spyOn(runtimeArgs, "prepareClaudeCliTransportArgs").mockImplementation((current) =>
+    withMockedWindowsPlatform(() => prepareArgs(current)),
+  );
+  const createWorkspace = tempPath.tempWorkspace;
+  const dirs: string[] = [];
+  vi.spyOn(tempPath, "tempWorkspace").mockImplementation(async (options) => {
+    const workspace = await createWorkspace(options);
+    dirs.push(workspace.dir);
+    return { ...workspace, writeJson: (...args) => writeJson(() => workspace.writeJson(...args)) };
+  });
+  return dirs;
 }
 
 async function collect(context: CliBackendExecuteContext) {
@@ -801,6 +819,34 @@ describe("Claude native stdio boundary", () => {
       expect(args).toEqual(expect.arrayContaining(["--settings", value]));
       expect(args[args.indexOf("--allowedTools") + 1]).toBe(approved.join(","));
     }
+  });
+
+  it("removes the settings file when the turn is cancelled while it is written", async () => {
+    const controller = new AbortController();
+    const context = await createRestrictedContext(manyOpenClawTools);
+    context.abortSignal = controller.signal;
+    const dirs = interceptWindowsSettingsWrite(async (write) => {
+      controller.abort(new Error("Synthetic owner cancelled during settings write."));
+      return await write();
+    });
+
+    await expect(collect(context)).rejects.toThrow("Claude CLI run is no longer active.");
+    expect(dirs).toHaveLength(1);
+    await vi.waitFor(() => expect(access(dirs[0]!)).rejects.toThrow());
+    await expect(access(path.join(context.cwd, "fixture.pid"))).rejects.toThrow();
+  });
+
+  it("removes the settings file and fails the turn when writing it fails", async () => {
+    const context = await createRestrictedContext(manyOpenClawTools);
+    const failure = new Error("Synthetic settings write failure.");
+    const dirs = interceptWindowsSettingsWrite(async () => {
+      throw failure;
+    });
+
+    await expect(collect(context)).rejects.toBe(failure);
+    expect(dirs).toHaveLength(1);
+    await expect(access(dirs[0]!)).rejects.toThrow();
+    await expect(access(path.join(context.cwd, "fixture.pid"))).rejects.toThrow();
   });
 
   it("cancels a pending native permission without blocking the protocol reader", async () => {
