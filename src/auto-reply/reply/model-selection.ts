@@ -59,7 +59,7 @@ import {
   normalizeRuntimeRef,
   resolveRuntimeNormalization,
 } from "./model-runtime-normalization.js";
-import { isStaleHeartbeatAutoFallbackOverride } from "./stored-model-override.js";
+import { isStaleAutoFallbackOverride } from "./stored-model-override.js";
 export {
   resolveModelDirectiveSelection,
   type ModelDirectiveSelection,
@@ -244,7 +244,7 @@ export async function createModelSelectionState(params: {
     entry: SessionEntry | undefined,
     override: storedModelOverrides.StoredModelOverride | null,
   ) => {
-    const staleHeartbeatAutoFallbackOverride = isStaleHeartbeatAutoFallbackOverride({
+    const staleAutoFallbackOverride = isStaleAutoFallbackOverride({
       isHeartbeat: params.isHeartbeat,
       hasResolvedHeartbeatModelOverride: params.hasResolvedHeartbeatModelOverride,
       sessionEntry: entry,
@@ -269,7 +269,7 @@ export async function createModelSelectionState(params: {
       (params.provider !== (override.provider ?? defaultProvider) ||
         params.model !== override.model);
     return (
-      staleHeartbeatAutoFallbackOverride ||
+      staleAutoFallbackOverride ||
       staleLegacyOpenAICodexAutoOverride ||
       staleLegacyAutoFallbackWithoutOrigin
     );
