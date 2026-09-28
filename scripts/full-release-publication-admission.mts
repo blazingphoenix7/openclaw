@@ -61,7 +61,6 @@ const toolingPaths = new Set([
   "scripts/release-validation-intent.mjs",
   "scripts/full-release-publication-admission.mts",
   "scripts/full-release-publication-contract.mjs",
-  "scripts/full-release-flake-policy.mjs",
   "scripts/lib/plugin-npm-release.ts",
   "scripts/lib/npm-json-output.mts",
   "packages/normalization-core/src/expect.ts",
@@ -224,6 +223,9 @@ function projectSource(
   if (!parsed) {
     throw new Error("invalid publication source version");
   }
+  if (parsed.channel === "alpha") {
+    throw new Error("Alpha releases are retired; use a beta prerelease instead.");
+  }
   const train = classifyReleaseTrain(parsed);
   if (train === "unsupported-extended-stable-correction") {
     throw new Error("unsupported extended-stable correction");
@@ -235,11 +237,7 @@ function projectSource(
       : train === "extended-stable"
         ? ["extended-stable"]
         : [parsed.channel];
-  if (
-    !allowedTags.includes(selection.npmDistTag) ||
-    (train === "extended-stable") !== extended ||
-    (parsed.channel === "alpha") !== (selection.route === "alpha")
-  ) {
+  if (!allowedTags.includes(selection.npmDistTag) || (train === "extended-stable") !== extended) {
     throw new Error("publication selection does not match the committed release version");
   }
   if (selection.route === "prepared" && !["beta", "stable"].includes(train)) {
@@ -302,7 +300,7 @@ function projectSource(
     if (extended) {
       return platform.id === "docker";
     }
-    return selection.publishOpenclawNpm && selection.route !== "alpha";
+    return selection.publishOpenclawNpm;
   });
   return { version: plan.version, packages, platforms };
 }
